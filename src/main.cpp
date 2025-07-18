@@ -119,6 +119,32 @@ int main(int argc, const char *argv[]) {
             namespace_closings << "}\n";
           }
         }
+        std::string class_name_with_underscores, class_name;
+        for (size_t i = 0; i < std::string_view{mod_name}.size(); ++i) {
+          if (i == 0) {
+            class_name_with_underscores +=
+              static_cast<char>(std::toupper(std::string_view{mod_name}[i]));
+          } else {
+            class_name_with_underscores += std::string_view{mod_name}[i];
+          }
+        }
+        {
+          bool previous_underscore = false;
+          for (const auto &e : class_name_with_underscores) {
+            if (previous_underscore) {
+              class_name += static_cast<char>(std::toupper(e));
+              previous_underscore = false;
+              continue;
+            }
+
+            if (e != '_') {
+              previous_underscore = true;
+            }
+            else {
+              class_name += e;
+            }
+          }
+        }
 
         mod_header_stream << "#pragma once\n\n"
         << namespace_openings.str()  << "class " << mod_name << " {\n" << low_spacer.str() << "public:\n" << spacer.str() << "\n" << low_spacer.str() << "};\n" << namespace_closings.str();
@@ -135,5 +161,8 @@ int main(int argc, const char *argv[]) {
         mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n" << namespace_openings.str() << "  \n" << "\n" << namespace_closings.str();
       }
     }
+  }
+  else {
+    std::cout << "why not giving your module name? :) e.g with 'cci_mod xyz'.";
   }
 }
