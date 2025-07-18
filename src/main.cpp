@@ -158,7 +158,7 @@ int main(int argc, const char *argv[]) {
         }
         non_absolute_include_path << mod_name << ".h";
         mod_cpp_stream.open(src_file_path);
-        mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n" << namespace_openings.str() << "  \n" << namespace_closings.str();
+        mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n" << namespace_openings.str() << "\n" << namespace_closings.str();
       }
     }
   }
