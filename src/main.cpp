@@ -23,16 +23,16 @@ int main(int argc, const char *argv[]) {
 
         const auto cmake_lists_content{std::string{
                                            R"(cmake_minimum_required(VERSION 3.28)
-  project()"} + mod_name + std::string{R"( VERSION 1.0)
-  set(CMAKE_CXX_STANDARD 23)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project()"} + mod_name + std::string{R"( VERSION 1.0)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-  include_directories(include)
+include_directories(include)
 
-  file(GLOB SOURCES src/*.cpp)
+file(GLOB SOURCES src/*.cpp)
 
-  add_library(${PROJECT_NAME} STATIC ${SOURCES})
-  target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
       )"}};
 
         std::ofstream file;
