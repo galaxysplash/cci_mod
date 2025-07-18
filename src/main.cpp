@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <stack>
+
 int main(int argc, const char *argv[]) {
   if (argc == 2) {
     const auto project_path = std::filesystem::current_path();
@@ -52,12 +53,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
       }
 
       std::stack<std::filesystem::path> directories_copy = directories;
+      std::stack<std::filesystem::path> directories_second_copy = directories;
+
       std::filesystem::path current_include_namespace_path = include_path;
 
-      while (!directories.empty()) {
+      for (;!directories.empty(); directories.pop()) {
         current_include_namespace_path /= directories.top();
         std::filesystem::create_directory(current_include_namespace_path);
-        directories.pop();
       }
       std::stringstream stream;
 
@@ -74,7 +76,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
         else {
           break;
         }
-      } 
+      }
 
       cmake_read_lib_stream.close();
       std::ofstream cmake_add_lib_stream;
@@ -88,23 +90,48 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 
       std::ofstream mod_header_stream;
       const auto mod_header_path = (current_include_namespace_path / mod_name).string() + ".h";
-      
+
       mod_header_stream.open(mod_header_path);
+      std::stringstream namespace_openings, low_spacer, spacer, namespace_closings;
+
+      {
+        size_t opening_count = 0;
+        for (;directories_second_copy.size() > 1; directories_second_copy.pop()) {
+          namespace_openings << "namespace " << directories_second_copy.top().c_str() << " {\n";
+
+          for (size_t i = 0; i < opening_count + 1; ++i) {
+            namespace_openings << "  ";
+          }
+
+          ++opening_count;
+        }
+        for (size_t i = 0; i < opening_count; ++i) {
+          low_spacer << "  ";
+        }
+        for (size_t i = 0; i < opening_count + 1; ++i) {
+          spacer << "  ";
+        }
+        for (; opening_count > 0; --opening_count) {
+          for (size_t i = 0; i < opening_count - 1; ++i) {
+            namespace_closings << "  ";
+          }
+          namespace_closings << "}\n";
+        }
+      }
+
       mod_header_stream << "#pragma once\n\n"
-          << "class " << mod_name << " {\npublic:\n\n};";
+      << namespace_openings.str()  << "class " << mod_name << " {\n" << low_spacer.str() << "public:\n" << spacer.str() << "\n" << low_spacer.str() << "};\n" << namespace_closings.str();
       mod_header_stream.close();
       std::ofstream mod_cpp_stream;
       const std::string src_file_path = (src_path / mod_name).string() + ".cpp";
 
       std::stringstream non_absolute_include_path;
-      while (!directories_copy.empty()) {
-        
+      for (;!directories_copy.empty(); directories_copy.pop()) {
         non_absolute_include_path << directories_copy.top().string() << "/";
-        directories_copy.pop();
       }
       non_absolute_include_path << mod_name << ".h";
       mod_cpp_stream.open(src_file_path);
-      mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n";
+      mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n" << namespace_openings.str() << "  \n" << "\n" << namespace_closings.str();
     }
   }
 }
