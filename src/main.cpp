@@ -88,11 +88,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
                              << "target_link_libraries(${PROJECT_NAME} PRIVATE "
                              << mod_name << ")";
         cmake_add_lib_stream.close();
-
-        std::ofstream mod_header_stream;
-        const auto mod_header_path = (current_include_namespace_path / mod_name).string() + ".h";
-
-        mod_header_stream.open(mod_header_path);
         std::stringstream namespace_openings, low_spacer, spacer, namespace_closings;
 
         {
@@ -146,17 +141,22 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
           }
         }
 
+        std::ofstream mod_header_stream;
+        const auto mod_header_path = (current_include_namespace_path / class_name).string() + ".h";
+
+        mod_header_stream.open(mod_header_path);
+
         mod_header_stream << "#pragma once\n\n"
-        << namespace_openings.str()  << "class " << mod_name << " {\n" << low_spacer.str() << "public:\n" << spacer.str() << "\n" << low_spacer.str() << "};\n" << namespace_closings.str();
+        << namespace_openings.str()  << "class " << class_name << " {\n" << low_spacer.str() << "public:\n" << spacer.str() << "\n" << low_spacer.str() << "};\n" << namespace_closings.str();
         mod_header_stream.close();
         std::ofstream mod_cpp_stream;
-        const std::string src_file_path = (src_path / mod_name).string() + ".cpp";
+        const std::string src_file_path = (src_path / class_name).string() + ".cpp";
 
         std::stringstream non_absolute_include_path;
         for (;!directories_copy.empty(); directories_copy.pop()) {
           non_absolute_include_path << directories_copy.top().string() << "/";
         }
-        non_absolute_include_path << mod_name << ".h";
+        non_absolute_include_path << class_name << ".h";
         mod_cpp_stream.open(src_file_path);
         mod_cpp_stream << "#include <" << non_absolute_include_path.str() << ">\n\n" << namespace_openings.str() << "\n" << namespace_closings.str();
       }
