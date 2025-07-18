@@ -163,6 +163,6 @@ int main(int argc, const char *argv[]) {
     }
   }
   else {
-    std::cout << "why not giving your module name? :) e.g with 'cci_mod xyz'.";
+    std::cout << "give your module a name, e.g. with 'cci_mod xyz'.";
   }
 }
